@@ -1,6 +1,13 @@
 import streamlit as st
 import pandas as pd
 
+# Verifica se o openpyxl está instalado
+try:
+    import openpyxl
+except ImportError:
+    st.error("O módulo 'openpyxl' não está instalado. Por favor, instale-o usando 'pip install openpyxl'.")
+    st.stop()
+
 # Título da Dashboard
 st.title("Dashboard de Contagem de Caixas Ópticas")
 
