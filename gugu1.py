@@ -1,13 +1,6 @@
 import streamlit as st
 import pandas as pd
 
-# Verifica se o openpyxl está instalado
-try:
-    import openpyxl
-except ImportError:
-    st.error("O módulo 'openpyxl' não está instalado. Por favor, instale-o usando 'pip install openpyxl'.")
-    st.stop()
-
 # Título da Dashboard
 st.title("Dashboard de Contagem de Caixas Ópticas")
 
@@ -22,18 +15,40 @@ if uploaded_file is not None:
     st.write("Dados Brutos:")
     st.write(df)
 
-    # Contagem de Caixas Ópticas por Zona, Região, POP, OLT, Placa e PON
-    contagem = df.groupby(['Zona', 'Regiao', 'POP', 'OLT', 'PLACA', 'PON'])['Caixa Optica'].count().reset_index()
+    # Função para criar tabelas agrupadas
+    def criar_tabela_agrupada(df, coluna_agrupamento, coluna_contagem):
+        tabela = df.groupby(coluna_agrupamento)[coluna_contagem].count().reset_index()
+        tabela = tabela.rename(columns={coluna_contagem: 'Quantidade de Caixas Ópticas'})
+        return tabela
 
-    # Renomeando a coluna de contagem
-    contagem = contagem.rename(columns={'Caixa Optica': 'Quantidade de Caixas Ópticas'})
+    # Criando tabelas para cada categoria
+    st.write("### Contagem por Zona")
+    tabela_zona = criar_tabela_agrupada(df, 'Zona', 'Caixa Optica')
+    st.write(tabela_zona)
 
-    # Exibindo a contagem
-    st.write("Contagem de Caixas Ópticas por Zona, Região, POP, OLT, Placa e PON:")
-    st.write(contagem)
+    st.write("### Contagem por Região")
+    tabela_regiao = criar_tabela_agrupada(df, 'Regiao', 'Caixa Optica')
+    st.write(tabela_regiao)
 
-    # Gráfico de barras para visualização
-    st.bar_chart(contagem.set_index('Zona')['Quantidade de Caixas Ópticas'])
+    st.write("### Contagem por POP")
+    tabela_pop = criar_tabela_agrupada(df, 'POP', 'Caixa Optica')
+    st.write(tabela_pop)
+
+    st.write("### Contagem por OLT")
+    tabela_olt = criar_tabela_agrupada(df, 'OLT', 'Caixa Optica')
+    st.write(tabela_olt)
+
+    st.write("### Contagem por Placa")
+    tabela_placa = criar_tabela_agrupada(df, 'PLACA', 'Caixa Optica')
+    st.write(tabela_placa)
+
+    st.write("### Contagem por PON")
+    tabela_pon = criar_tabela_agrupada(df, 'PON', 'Caixa Optica')
+    st.write(tabela_pon)
+
+    # Gráfico de barras para visualização (opcional)
+    st.write("### Gráfico de Barras por Zona")
+    st.bar_chart(tabela_zona.set_index('Zona')['Quantidade de Caixas Ópticas'])
 
 else:
     st.write("Por favor, carregue um arquivo XLSX para começar.")
