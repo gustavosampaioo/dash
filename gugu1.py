@@ -1,8 +1,9 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 
 # Título da Dashboard
-st.title("Dashboard de Contagem de Caixas Ópticas")
+st.title("Dashboard de Contagem de Caixas Ópticas Interativa")
 
 # Upload do arquivo XLSX
 uploaded_file = st.file_uploader("Carregue o arquivo XLSX", type=["xlsx"])
@@ -15,40 +16,55 @@ if uploaded_file is not None:
     st.write("Dados Brutos:")
     st.write(df)
 
-    # Função para criar tabelas agrupadas
-    def criar_tabela_agrupada(df, coluna_agrupamento, coluna_contagem):
-        tabela = df.groupby(coluna_agrupamento)[coluna_contagem].count().reset_index()
-        tabela = tabela.rename(columns={coluna_contagem: 'Quantidade de Caixas Ópticas'})
-        return tabela
+    # Função para criar gráficos de barras interativos
+    def criar_grafico(df, coluna_agrupamento, titulo):
+        contagem = df.groupby(coluna_agrupamento)['Caixa Optica'].count().reset_index()
+        contagem = contagem.rename(columns={'Caixa Optica': 'Quantidade de Caixas Ópticas'})
+        fig = px.bar(contagem, x=coluna_agrupamento, y='Quantidade de Caixas Ópticas', title=titulo)
+        return fig, contagem
 
-    # Criando tabelas para cada categoria
-    st.write("### Contagem por Zona")
-    tabela_zona = criar_tabela_agrupada(df, 'Zona', 'Caixa Optica')
-    st.write(tabela_zona)
+    # Criando gráficos para cada categoria
+    fig_zona, tabela_zona = criar_grafico(df, 'Zona', 'Contagem de Caixas Ópticas por Zona')
+    fig_regiao, tabela_regiao = criar_grafico(df, 'Regiao', 'Contagem de Caixas Ópticas por Região')
+    fig_pop, tabela_pop = criar_grafico(df, 'POP', 'Contagem de Caixas Ópticas por POP')
+    fig_olt, tabela_olt = criar_grafico(df, 'OLT', 'Contagem de Caixas Ópticas por OLT')
+    fig_placa, tabela_placa = criar_grafico(df, 'PLACA', 'Contagem de Caixas Ópticas por Placa')
+    fig_pon, tabela_pon = criar_grafico(df, 'PON', 'Contagem de Caixas Ópticas por PON')
 
-    st.write("### Contagem por Região")
-    tabela_regiao = criar_tabela_agrupada(df, 'Regiao', 'Caixa Optica')
-    st.write(tabela_regiao)
+    # Exibindo os gráficos
+    st.plotly_chart(fig_zona, use_container_width=True)
+    st.plotly_chart(fig_regiao, use_container_width=True)
+    st.plotly_chart(fig_pop, use_container_width=True)
+    st.plotly_chart(fig_olt, use_container_width=True)
+    st.plotly_chart(fig_placa, use_container_width=True)
+    st.plotly_chart(fig_pon, use_container_width=True)
 
-    st.write("### Contagem por POP")
-    tabela_pop = criar_tabela_agrupada(df, 'POP', 'Caixa Optica')
-    st.write(tabela_pop)
+    # Função para filtrar os dados com base na seleção do gráfico
+    def filtrar_dados(df, coluna, valor):
+        return df[df[coluna] == valor]
 
-    st.write("### Contagem por OLT")
-    tabela_olt = criar_tabela_agrupada(df, 'OLT', 'Caixa Optica')
-    st.write(tabela_olt)
+    # Capturando a seleção do usuário em cada gráfico
+    selecao_zona = st.selectbox("Selecione uma Zona para filtrar:", tabela_zona['Zona'].unique())
+    df_filtrado = filtrar_dados(df, 'Zona', selecao_zona)
 
-    st.write("### Contagem por Placa")
-    tabela_placa = criar_tabela_agrupada(df, 'PLACA', 'Caixa Optica')
-    st.write(tabela_placa)
+    selecao_regiao = st.selectbox("Selecione uma Região para filtrar:", df_filtrado['Regiao'].unique())
+    df_filtrado = filtrar_dados(df_filtrado, 'Regiao', selecao_regiao)
 
-    st.write("### Contagem por PON")
-    tabela_pon = criar_tabela_agrupada(df, 'PON', 'Caixa Optica')
-    st.write(tabela_pon)
+    selecao_pop = st.selectbox("Selecione um POP para filtrar:", df_filtrado['POP'].unique())
+    df_filtrado = filtrar_dados(df_filtrado, 'POP', selecao_pop)
 
-    # Gráfico de barras para visualização (opcional)
-    st.write("### Gráfico de Barras por Zona")
-    st.bar_chart(tabela_zona.set_index('Zona')['Quantidade de Caixas Ópticas'])
+    selecao_olt = st.selectbox("Selecione uma OLT para filtrar:", df_filtrado['OLT'].unique())
+    df_filtrado = filtrar_dados(df_filtrado, 'OLT', selecao_olt)
+
+    selecao_placa = st.selectbox("Selecione uma Placa para filtrar:", df_filtrado['PLACA'].unique())
+    df_filtrado = filtrar_dados(df_filtrado, 'PLACA', selecao_placa)
+
+    selecao_pon = st.selectbox("Selecione uma PON para filtrar:", df_filtrado['PON'].unique())
+    df_filtrado = filtrar_dados(df_filtrado, 'PON', selecao_pon)
+
+    # Exibindo os dados filtrados
+    st.write("### Dados Filtrados:")
+    st.write(df_filtrado)
 
 else:
     st.write("Por favor, carregue um arquivo XLSX para começar.")
