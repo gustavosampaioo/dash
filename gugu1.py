@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+from streamlit_plotly_events import plotly_events
 
 # Título da Dashboard
 st.title("Dashboard de Contagem de Caixas Ópticas Interativa")
@@ -31,36 +32,52 @@ if uploaded_file is not None:
     fig_placa, tabela_placa = criar_grafico(df, 'PLACA', 'Contagem de Caixas Ópticas por Placa')
     fig_pon, tabela_pon = criar_grafico(df, 'PON', 'Contagem de Caixas Ópticas por PON')
 
-    # Exibindo os gráficos
-    st.plotly_chart(fig_zona, use_container_width=True)
-    st.plotly_chart(fig_regiao, use_container_width=True)
-    st.plotly_chart(fig_pop, use_container_width=True)
-    st.plotly_chart(fig_olt, use_container_width=True)
-    st.plotly_chart(fig_placa, use_container_width=True)
-    st.plotly_chart(fig_pon, use_container_width=True)
+    # Exibindo os gráficos e capturando eventos de clique
+    st.write("### Clique em uma barra para filtrar os dados:")
 
-    # Função para filtrar os dados com base na seleção do gráfico
-    def filtrar_dados(df, coluna, valor):
-        return df[df[coluna] == valor]
+    # Gráfico de Zona
+    st.write("#### Zona")
+    selected_zona = plotly_events(fig_zona, click_event=True)
+    if selected_zona:
+        zona_selecionada = tabela_zona.iloc[selected_zona[0]['pointIndex']]['Zona']
+        df_filtrado = df[df['Zona'] == zona_selecionada]
+    else:
+        df_filtrado = df
 
-    # Capturando a seleção do usuário em cada gráfico
-    selecao_zona = st.selectbox("Selecione uma Zona para filtrar:", tabela_zona['Zona'].unique())
-    df_filtrado = filtrar_dados(df, 'Zona', selecao_zona)
+    # Gráfico de Região
+    st.write("#### Região")
+    selected_regiao = plotly_events(fig_regiao, click_event=True)
+    if selected_regiao:
+        regiao_selecionada = tabela_regiao.iloc[selected_regiao[0]['pointIndex']]['Regiao']
+        df_filtrado = df_filtrado[df_filtrado['Regiao'] == regiao_selecionada]
 
-    selecao_regiao = st.selectbox("Selecione uma Região para filtrar:", df_filtrado['Regiao'].unique())
-    df_filtrado = filtrar_dados(df_filtrado, 'Regiao', selecao_regiao)
+    # Gráfico de POP
+    st.write("#### POP")
+    selected_pop = plotly_events(fig_pop, click_event=True)
+    if selected_pop:
+        pop_selecionado = tabela_pop.iloc[selected_pop[0]['pointIndex']]['POP']
+        df_filtrado = df_filtrado[df_filtrado['POP'] == pop_selecionado]
 
-    selecao_pop = st.selectbox("Selecione um POP para filtrar:", df_filtrado['POP'].unique())
-    df_filtrado = filtrar_dados(df_filtrado, 'POP', selecao_pop)
+    # Gráfico de OLT
+    st.write("#### OLT")
+    selected_olt = plotly_events(fig_olt, click_event=True)
+    if selected_olt:
+        olt_selecionada = tabela_olt.iloc[selected_olt[0]['pointIndex']]['OLT']
+        df_filtrado = df_filtrado[df_filtrado['OLT'] == olt_selecionada]
 
-    selecao_olt = st.selectbox("Selecione uma OLT para filtrar:", df_filtrado['OLT'].unique())
-    df_filtrado = filtrar_dados(df_filtrado, 'OLT', selecao_olt)
+    # Gráfico de Placa
+    st.write("#### Placa")
+    selected_placa = plotly_events(fig_placa, click_event=True)
+    if selected_placa:
+        placa_selecionada = tabela_placa.iloc[selected_placa[0]['pointIndex']]['PLACA']
+        df_filtrado = df_filtrado[df_filtrado['PLACA'] == placa_selecionada]
 
-    selecao_placa = st.selectbox("Selecione uma Placa para filtrar:", df_filtrado['PLACA'].unique())
-    df_filtrado = filtrar_dados(df_filtrado, 'PLACA', selecao_placa)
-
-    selecao_pon = st.selectbox("Selecione uma PON para filtrar:", df_filtrado['PON'].unique())
-    df_filtrado = filtrar_dados(df_filtrado, 'PON', selecao_pon)
+    # Gráfico de PON
+    st.write("#### PON")
+    selected_pon = plotly_events(fig_pon, click_event=True)
+    if selected_pon:
+        pon_selecionada = tabela_pon.iloc[selected_pon[0]['pointIndex']]['PON']
+        df_filtrado = df_filtrado[df_filtrado['PON'] == pon_selecionada]
 
     # Exibindo os dados filtrados
     st.write("### Dados Filtrados:")
